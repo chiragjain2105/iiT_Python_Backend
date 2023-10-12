@@ -16,7 +16,7 @@ from db import database, users
 from models import User
 from passlib.context import CryptContext
 
-pinecone.init(api_key="a7173290-0fd4-474b-85c8-140bdf29fb2b", environment="gcp-starter")
+pinecone.init(api_key="", environment="")
 
 app = FastAPI()
 # app.max_request_size = 1024 * 1024 * 10
