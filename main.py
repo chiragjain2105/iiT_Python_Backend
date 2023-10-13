@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, status
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 import async_timeout
@@ -12,6 +12,9 @@ from langchain.chains import RetrievalQA
 import pinecone
 from langchain.vectorstores import FAISS
 from pypdf import PdfReader
+from db import database, users
+from models import User
+from passlib.context import CryptContext
 
 pinecone.init(api_key="a7173290-0fd4-474b-85c8-140bdf29fb2b", environment="gcp-starter")
 
@@ -26,7 +29,47 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# pdfData=""
+@app.on_event("startup")
+async def startup_db():
+    await database.connect()
+
+@app.on_event("shutdown")
+async def shutdown_db():
+    await database.disconnect()
+
+# Password hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Dependency to get the database connection
+async def get_db():
+    async with database.transaction():
+        yield database
+
+@app.post("/register", response_model=User, status_code=status.HTTP_201_CREATED)
+async def register(user: User, db: database = Depends(get_db)):
+    # Hash the user's password
+    hashed_password = pwd_context.hash(user.password)
+    # Create a query to insert user data into the database
+    query = users.insert().values(username=user.username, password=hashed_password)
+    # Execute the query and get the ID of the last inserted record
+    last_record_id = await db.execute(query)
+    # Return the ID and the user's data as the response
+    return {"id": last_record_id, **user.dict()}
+
+@app.post("/login", response_model=User)
+async def login(user: User, db: database = Depends(get_db)):
+    # Create a query to retrieve user data based on the provided username
+    query = users.select().where(users.c.username == user.username)
+    # Execute the query to get the user data
+    db_user = await db.fetch_one(query)
+    # Check if the username exists
+    if db_user is None:
+        raise HTTPException(status_code=400, detail="Username not found")
+    # Verify the provided password against the hashed password in the database
+    if not pwd_context.verify(user.password, db_user['password']):
+        raise HTTPException(status_code=400, detail="Incorrect password")
+    # Return the username, password as the response
+    return {"username": user.username,"password":user.password}
+
 
 class InputData(BaseModel):
     inputData: str
@@ -78,8 +121,6 @@ async def upload_pdf(pdf_file: UploadFile):
     return {'data':text}
 
 
-
-
 @app.post('/api/question')
 async def process_question(data: QuestionData):
     global qa
@@ -89,3 +130,8 @@ async def process_question(data: QuestionData):
     print(result)
 
     return result
+
+
+
+
+

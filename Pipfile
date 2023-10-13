@@ -18,6 +18,11 @@ async-timeout = "*"
 python-multipart = "*"
 pypdf = "*"
 faiss-cpu = "*"
+databases = "*"
+passlib = "*"
+aiomysql = "*"
+mysqlclient = "*"
+bcrypt = "*"
 
 [dev-packages]
 
