@@ -125,7 +125,6 @@ async def upload_pdf(pdf_file: UploadFile):
 async def process_question(data: QuestionData):
     global qa
     ques = data.question
-
     result = qa({"query": ques})
     print(result)
 
