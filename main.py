@@ -13,7 +13,7 @@ import pinecone
 from langchain.vectorstores import FAISS
 from pypdf import PdfReader
 from db import database, users
-from models import User
+from models import User,Status
 from passlib.context import CryptContext
 
 pinecone.init(api_key="", environment="")
@@ -55,7 +55,7 @@ async def register(user: User, db: database = Depends(get_db)):
     # Return the ID and the user's data as the response
     return {"id": last_record_id, **user.dict()}
 
-@app.post("/login", response_model=User)
+@app.post("/login", response_model=Status)
 async def login(user: User, db: database = Depends(get_db)):
     # Create a query to retrieve user data based on the provided username
     query = users.select().where(users.c.username == user.username)
@@ -63,13 +63,13 @@ async def login(user: User, db: database = Depends(get_db)):
     db_user = await db.fetch_one(query)
     # Check if the username exists
     if db_user is None:
-        raise HTTPException(status_code=400, detail="Username not found")
+        raise HTTPException(status_code=200, detail="Username not found")
     # Verify the provided password against the hashed password in the database
     if not pwd_context.verify(user.password, db_user['password']):
-        raise HTTPException(status_code=400, detail="Incorrect password")
+        raise HTTPException(status_code=200, detail="Incorrect password")
     # Return the username, password as the response
-    return {"username": user.username,"password":user.password}
-
+    # return {"username": user.username,"password":user.password}
+    return {"loginStatus":True}
 
 class InputData(BaseModel):
     inputData: str
