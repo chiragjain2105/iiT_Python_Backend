@@ -3,7 +3,7 @@ import sqlalchemy
 from databases import Database
 from sqlalchemy import Table, Column, Integer, String
 
-DATABASE_URL = "mysql://root:1234@localhost:3306/iiT_db"
+DATABASE_URL = "mysql://root:root@localhost:3306/iiT_db"
 database = Database(DATABASE_URL)
 metadata = sqlalchemy.MetaData()
 

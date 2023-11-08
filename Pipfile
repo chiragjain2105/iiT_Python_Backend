@@ -4,25 +4,24 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-langchain = "*"
 fastapi = "*"
 uvicorn = {extras = ["standard"], version = "*"}
 tiktoken = "*"
-openai = "*"
 pinecone-client = "*"
-sentence-transformers = "*"
-instructorembedding = "*"
-transformers = "*"
 protobuf = "*"
 async-timeout = "*"
 python-multipart = "*"
-pypdf = "*"
 faiss-cpu = "*"
 databases = "*"
 passlib = "*"
 aiomysql = "*"
 mysqlclient = "*"
 bcrypt = "*"
+sklearn = "*"
+nltk = "*"
+pypdf2 = "*"
+langchain = "*"
+openai = "==0.28.1"
 
 [dev-packages]
 
